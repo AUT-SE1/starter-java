@@ -18,6 +18,22 @@ jobs:
       # Surefire leaves the contract test out of `mvn test`: it needs a
       # neighbouring team's sandbox, which CI has no way to reach.
       - name: Test
-        run: mvn -B test
+        run: |
+          set -o pipefail
+          if ! mvn -B test 2>&1 | tee /tmp/mvn.log; then
+            echo "::group::Maven failure"
+            tail -150 /tmp/mvn.log
+            echo "::endgroup::"
+            grep -E '^\[ERROR\]' /tmp/mvn.log | head -30 | while IFS= read -r line; do
+              echo "::error::${line}"
+            done
+            for report in target/surefire-reports/*.txt; do
+              [ -f "$report" ] || continue
+              head -25 "$report" | while IFS= read -r line; do
+                echo "::error::$(basename "$report"): ${line}"
+              done
+            done
+            exit 1
+          fi
       - name: Coverage report
         run: mvn -B verify
