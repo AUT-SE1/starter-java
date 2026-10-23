@@ -33,6 +33,13 @@
       <artifactId>junit-jupiter-params</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Spring Boot 4's webmvc starter does not pull jackson-databind in, and
+         the tests read responses as a JsonNode. Version managed by the BOM. -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <finalName>starter-service</finalName>
