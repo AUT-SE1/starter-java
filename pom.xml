@@ -18,9 +18,28 @@
     <java.version>17</java.version>
   </properties>
   <dependencies>
+    <!-- وب‌مورس برای ساخت اندپوینت‌ها -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webmvc</artifactId>
+    </dependency>
+
+    <!-- کتابخانه تولید خودکار سند OpenAPI و Swagger UI (مورد نیاز آزمایشگاه) -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>2.5.0</version>
+    </dependency>
+
+    <!-- دیتابیس و ORM برای اتصال به PostgreSQL -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
   <build>
