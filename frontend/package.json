@@ -4,12 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "gen:api": "openapi-typescript ../openapi.yaml -o src/api/schema.d.ts",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "openapi-fetch": "^0.17.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
@@ -23,6 +25,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.13.0",
+    "openapi-typescript": "^7.13.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.72.0",
     "vite": "^8.3.5"

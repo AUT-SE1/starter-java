@@ -68,6 +68,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /settlement-reports:
+    get:
+      summary: Get daily settlement report
+      description: دریافت گزارش تسویه‌های یک روز کاری جهت بررسی و تطبیق مغایرت‌ها
+      operationId: getSettlementReport
+      parameters:
+        - name: date
+          in: query
+          required: false
+          description: تاریخ روز کاری مورد نظر (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: "2026-10-31"
+      responses:
+        '200':
+          description: Settlement report fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementReportData'              
 components:
   schemas:
     Health:
@@ -113,3 +134,91 @@ components:
           type: string
         message:
           type: string
+    SettlementReportData:
+      type: object
+      required:
+        - report_id
+        - business_date
+        - generated_at
+        - summary
+        - transactions
+      properties:
+        report_id:
+          type: string
+          format: uuid
+        business_date:
+          type: string
+          format: date
+        generated_at:
+          type: string
+          format: date-time
+        summary:
+          $ref: '#/components/schemas/SettlementReportSummary'
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SettlementReportItem'
+
+    SettlementReportSummary:
+      type: object
+      required:
+        - totalCount
+        - totalAmount
+        - successCount
+        - failedCount
+      properties:
+        totalCount:
+          type: integer
+          format: int64
+        totalAmount:
+          type: integer
+          format: int64
+        successCount:
+          type: integer
+          format: int64
+        failedCount:
+          type: integer
+          format: int64
+
+    SettlementReportItem:
+      type: object
+      required:
+        - transactionId
+        - sourceIban
+        - destinationIban
+        - amount
+        - currency
+        - settlementType
+        - status
+        - createdAt
+      properties:
+        transactionId:
+          type: string
+          format: uuid
+        correlationId:
+          type: string
+        idempotencyKey:
+          type: string
+        sourceIban:
+          type: string
+        destinationIban:
+          type: string
+        amount:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        settlementType:
+          type: string
+        status:
+          type: string
+        failureReason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        settledAt:
+          type: string
+          format: date-time
+          nullable: true      
