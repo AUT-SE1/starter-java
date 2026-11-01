@@ -1,4 +1,4 @@
-package edu.softwarelab.starter.dto.report;
+package edu.softwarelab.starter.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;

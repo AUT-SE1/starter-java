@@ -1,9 +1,9 @@
 package edu.softwarelab.starter.service;
 
-import edu.softwarelab.starter.dto.report.ReportResultEvent;
-import edu.softwarelab.starter.dto.report.SettlementDailyReportEvent;
-import edu.softwarelab.starter.dto.report.SettlementReportItem;
-import edu.softwarelab.starter.dto.report.SettlementReportSummary;
+import edu.softwarelab.starter.dto.ReportResultEvent;
+import edu.softwarelab.starter.dto.SettlementDailyReportEvent;
+import edu.softwarelab.starter.dto.SettlementReportItem;
+import edu.softwarelab.starter.dto.SettlementReportSummary;
 import edu.softwarelab.starter.entity.SettlementTransfer;
 import edu.softwarelab.starter.repository.SettlementTransferRepository;
 import org.springframework.stereotype.Service;

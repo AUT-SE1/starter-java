@@ -1,4 +1,4 @@
-package edu.softwarelab.starter;
+package edu.softwarelab.starter.exception;
 
 /** Thrown when a request body does not satisfy the contract. */
 public class ValidationException extends RuntimeException {

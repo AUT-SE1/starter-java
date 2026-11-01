@@ -1,6 +1,7 @@
-package edu.softwarelab.starter;
+package edu.softwarelab.starter.exception;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import edu.softwarelab.starter.Orders;
 
 /**
  * The body returned with every 4xx response.

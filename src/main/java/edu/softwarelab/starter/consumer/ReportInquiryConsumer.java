@@ -1,7 +1,7 @@
 package edu.softwarelab.starter.consumer;
 
-import edu.softwarelab.starter.dto.report.ReportInquiryCommand;
-import edu.softwarelab.starter.dto.report.SettlementDailyReportEvent;
+import edu.softwarelab.starter.dto.ReportInquiryCommand;
+import edu.softwarelab.starter.dto.SettlementDailyReportEvent;
 import edu.softwarelab.starter.producer.ReportKafkaProducer;
 import edu.softwarelab.starter.service.SettlementReportService;
 import org.slf4j.Logger;

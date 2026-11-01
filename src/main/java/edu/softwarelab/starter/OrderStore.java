@@ -5,6 +5,8 @@ import java.util.HexFormat;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+
+import edu.softwarelab.starter.entity.Order;
 import org.springframework.stereotype.Component;
 
 /** Orders held in memory. A real service would use a database. */
