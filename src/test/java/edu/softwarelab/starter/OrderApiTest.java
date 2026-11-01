@@ -130,6 +130,6 @@ class OrderApiTest {
         Call call = send("GET", "/health", null);
 
         assertEquals(200, call.status());
-        assertEquals("ok", call.body().path("status").asText());
+        assertEquals("UP", call.body().path("status").asText());
     }
 }
