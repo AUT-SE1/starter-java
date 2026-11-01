@@ -1,6 +1,6 @@
 package edu.softwarelab.starter.producer;
 
-import edu.softwarelab.starter.dto.report.SettlementDailyReportEvent;
+import edu.softwarelab.starter.dto.SettlementDailyReportEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;

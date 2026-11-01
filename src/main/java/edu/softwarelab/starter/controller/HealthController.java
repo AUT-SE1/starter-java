@@ -1,4 +1,4 @@
-package edu.softwarelab.starter;
+package edu.softwarelab.starter.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;

@@ -1,4 +1,4 @@
-package edu.softwarelab.starter.dto.report;
+package edu.softwarelab.starter.dto;
 
 public record SettlementReportSummary(
         long totalCount,

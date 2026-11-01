@@ -1,38 +1,39 @@
-# Your own sandbox, for the neighbouring team to test against.
-#
-#   docker compose up --build -d
-#
-# The service binds 0.0.0.0 inside the container and the port below publishes
-# it on every interface of your machine, so your neighbour can reach it at
-# http://<your-ip>:8080. Find your address with `ip addr` (Linux),
-# `ipconfig` (Windows) or `ipconfig getifaddr en0` (macOS).
+version: '3.8'
+
 services:
+  # 1. سرویس برنامه شما (S5-STL)
   service:
     build: .
     ports:
-      - "8080:8080"
+      - "8080:8080" # توجه: طبق مستندات پروژه، پورت پیش‌فرض برنامه باید 8085 باشد. می‌توانید پورت را به "8085:8085" تغییر دهید.
     restart: unless-stopped
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/settlement_db
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=mypassword
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1:8080/health || exit 1"]
       interval: 10s
       timeout: 3s
       retries: 5
       start_period: 20s
+    depends_on:
+      - kafka
+      - postgres
 
-
-version: '3.8'
-services:
+  # 2. سرویس Kafka (حالت KRaft)
   kafka:
     image: apache/kafka:latest
     container_name: local-kafka
     ports:
       - "9092:9092"
     environment:
-      # تنظیمات حالت KRaft
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      # تغییر نام آدرس تبلیغ شده به نام سرویس (kafka) برای ارتباط داخلی شبکه‌ای
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
@@ -40,3 +41,14 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+  # 3. سرویس PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: local-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: settlement_db

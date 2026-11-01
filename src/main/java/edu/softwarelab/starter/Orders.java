@@ -1,5 +1,7 @@
 package edu.softwarelab.starter;
 
+import edu.softwarelab.starter.exception.ValidationException;
+
 /**
  * Order validation, kept apart from the web layer so the tests for it are
  * unit tests: no HTTP, no network, no storage.
