@@ -22,7 +22,7 @@ channels:
         $ref: '#/components/messages/SettlementDailyReportEvent'
 
   lab.s6.s5.command.report.inquire.v1:
-    description: تاپیک دریافت فرامین استعلام گزارش روزانه از سمت S6
+    description:  دریافت فرامین استعلام گزارش روزانه از سمت S6
     subscribe:
       operationId: consumeReportInquiry
       summary: دریافت درخواست استعلام مجدد گزارش برای یک روز کاری مشخص
@@ -41,7 +41,7 @@ components:
   messages:
     SettlementDailyReportEvent:
       name: SettlementDailyReportEvent
-      title: رویداد گزارش روزانه تسویه
+      title: event گزارش روزانه تسویه
       summary: رویداد انولوپ حاوی اطلاعات آماری و ریز تراکنش‌های تسویه
       contentType: application/json
       payload:
