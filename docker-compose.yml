@@ -1,54 +1,67 @@
-version: '3.8'
-
+# اجرا:  cp .env.example .env   (و DB_PASSWORD را پر کنید)
+#        docker compose up --build -d
 services:
-  # 1. سرویس برنامه شما (S5-STL)
   service:
     build: .
+    container_name: s5-service
     ports:
-      - "8080:8080" # توجه: طبق مستندات پروژه، پورت پیش‌فرض برنامه باید 8085 باشد. می‌توانید پورت را به "8085:8085" تغییر دهید.
+      - "8085:8085"
     restart: unless-stopped
     environment:
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/settlement_db
-      - SPRING_DATASOURCE_USERNAME=myuser
-      - SPRING_DATASOURCE_PASSWORD=mypassword
+      SERVER_PORT: 8085
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-s5_settlement_db}
+      DB_USERNAME: ${DB_USERNAME:-labbank_s5}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD را در .env تعریف کنید}
+      KAFKA_S3_BOOTSTRAP_SERVERS: kafka:19092
+      KAFKA_S6_BOOTSTRAP_SERVERS: kafka:19092
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1:8080/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1:8085/health || exit 1"]
       interval: 10s
       timeout: 3s
       retries: 5
-      start_period: 20s
+      start_period: 30s
     depends_on:
-      - kafka
-      - postgres
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
 
-  # 2. سرویس Kafka (حالت KRaft)
+  # Kafka (KRaft). از داخل Docker: kafka:19092 ، از سیستم شما: localhost:9092
   kafka:
-    image: apache/kafka:latest
-    container_name: local-kafka
+    image: apache/kafka:3.8.0
+    container_name: s5-kafka
     ports:
       - "9092:9092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      # تغییر نام آدرس تبلیغ شده به نام سرویس (kafka) برای ارتباط داخلی شبکه‌ای
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:19092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:19092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
 
-  # 3. سرویس PostgreSQL
   postgres:
-    image: postgres:15-alpine
-    container_name: local-postgres
+    image: postgres:16
+    container_name: s5-postgres
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: settlement_db
+      POSTGRES_DB: ${DB_NAME:-s5_settlement_db}
+      POSTGRES_USER: ${DB_USERNAME:-labbank_s5}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD را در .env تعریف کنید}
+    volumes:
+      - s5_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  s5_pgdata:

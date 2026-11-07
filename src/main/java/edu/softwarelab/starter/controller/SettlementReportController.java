@@ -1,6 +1,7 @@
 package edu.softwarelab.starter.controller;
 
-import edu.softwarelab.starter.dto.report.SettlementDailyReportEvent;
+
+import edu.softwarelab.starter.dto.SettlementDailyReportEvent;
 import edu.softwarelab.starter.service.SettlementReportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
