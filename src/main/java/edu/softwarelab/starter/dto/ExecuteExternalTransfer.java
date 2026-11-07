@@ -1,27 +1,53 @@
 package edu.softwarelab.starter.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-/** دستور S3 → S5: ExecuteExternalTransfer.v3 */
-public record ExecuteExternalTransfer(
-        @JsonProperty("message_id") UUID messageId,
-        @JsonProperty("schema_version") String schemaVersion,
-        @JsonProperty("transaction_id") UUID transactionId,
-        @JsonProperty("correlation_id") String correlationId,
-        @JsonProperty("causation_id") UUID causationId,
-        @JsonProperty("occurred_at") OffsetDateTime occurredAt,
-        @JsonProperty("producer") String producer,
-        @JsonProperty("message_type") String messageType,
-        @JsonProperty("operation_id") UUID operationId,
-        @JsonProperty("data") Data data
-) {
-    public record Data(
-            @JsonProperty("dest_iban") String destIban,
-            @JsonProperty("amount") Long amount,
-            @JsonProperty("currency") String currency
-    ) {
+@Data
+public class ExecuteExternalTransfer {
+
+    @JsonProperty("message_id")
+    private UUID messageId;
+
+    @JsonProperty("schema_version")
+    private String schemaVersion = "3.0";
+
+    @JsonProperty("transaction_id")
+    private UUID transactionId;
+
+    @JsonProperty("correlation_id")
+    private String correlationId;
+
+    @JsonProperty("causation_id")
+    private UUID causationId;
+
+    @JsonProperty("occurred_at")
+    private OffsetDateTime occurredAt;
+
+    @JsonProperty("producer")
+    private String producer = "S3-PAY";
+
+    @JsonProperty("message_type")
+    private String messageType = "ExecuteExternalTransfer.v3";
+
+    @JsonProperty("operation_id")
+    private UUID operationId;
+
+    @JsonProperty("data")
+    private TransferData data;
+
+    @Data
+    public static class TransferData {
+        @JsonProperty("dest_iban")
+        private String destIban;
+
+        @JsonProperty("amount")
+        private Long amount;
+
+        @JsonProperty("currency")
+        private String currency = "IRR";
     }
 }

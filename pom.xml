@@ -81,7 +81,7 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Testcontainers برای تست Integration هفته آینده -->
+    <!-- Testcontainers -->
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>postgresql</artifactId>
@@ -93,6 +93,13 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- Lombok -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.34</version>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
 
   <build>
@@ -103,9 +110,32 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+            </exclude>
+          </excludes>
+        </configuration>
       </plugin>
 
-      <!-- Surefire Plugin (برای اجرای تست‌ها و استثنا کردن Contract Tests) -->
+      <!-- Maven Compiler Plugin: حیاتی برای پردازش انوتیشن‌های لومبوک -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>1.18.34</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+
+      <!-- Surefire Plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -116,11 +146,11 @@
         </configuration>
       </plugin>
 
-      <!-- JaCoCo Plugin (یکی شده و نسخه اضافی پاک شد) -->
+      <!-- JaCoCo Plugin -->
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.12</version> <!-- از آخرین نسخه استفاده شد -->
+        <version>0.8.12</version>
         <executions>
           <execution>
             <id>prepare-agent</id>
@@ -130,14 +160,13 @@
           </execution>
           <execution>
             <id>report</id>
-            <phase>test</phase> <!-- گزارش بلافاصله بعد از تست ساخته می‌شود -->
+            <phase>test</phase>
             <goals>
               <goal>report</goal>
             </goals>
           </execution>
         </executions>
       </plugin>
-
     </plugins>
   </build>
 
