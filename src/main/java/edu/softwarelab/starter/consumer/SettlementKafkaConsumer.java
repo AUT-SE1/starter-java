@@ -1,6 +1,7 @@
-package edu.softwarelab.starter.kafka;
+package edu.softwarelab.starter.consumer;
 
 import edu.softwarelab.starter.dto.ExecuteExternalTransfer;
+import edu.softwarelab.starter.kafka.KafkaTopics;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -26,7 +27,7 @@ public class SettlementKafkaConsumer {
         try {
             log.info("Received ExecuteExternalTransfer command for transaction: {}", transactionId);
             // در اینجا باید متدهای سرویس خود (SettlementService) را برای بررسی Idempotency و ذخیره در دیتابیس فراخوانی کنید
-
+           System.out.println("Received ExecuteExternalTransfer command for transaction: " + transactionId);
         } finally {
             MDC.clear();
         }

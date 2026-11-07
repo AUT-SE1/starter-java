@@ -1,9 +1,12 @@
 package edu.softwarelab.starter.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+@Data
 public class ExecuteExternalTransfer {
 
     @JsonProperty("message_id")
@@ -34,11 +37,10 @@ public class ExecuteExternalTransfer {
     private UUID operationId;
 
     @JsonProperty("data")
-    private Data data;
+    private TransferData data;
 
-    // Getters and Setters...
-
-    public static class Data {
+    @Data
+    public static class TransferData {
         @JsonProperty("dest_iban")
         private String destIban;
 
@@ -47,7 +49,5 @@ public class ExecuteExternalTransfer {
 
         @JsonProperty("currency")
         private String currency = "IRR";
-
-        // Getters and Setters...
     }
 }

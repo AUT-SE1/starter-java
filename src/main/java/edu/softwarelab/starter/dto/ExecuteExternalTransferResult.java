@@ -1,9 +1,12 @@
 package edu.softwarelab.starter.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+@Data
 public class ExecuteExternalTransferResult {
 
     @JsonProperty("message_id")
@@ -42,8 +45,7 @@ public class ExecuteExternalTransferResult {
     @JsonProperty("error")
     private OperationError error;
 
-    // Getters and Setters...
-
+    @Data
     public static class ResultData {
         @JsonProperty("dest_iban")
         private String destIban;
@@ -62,10 +64,9 @@ public class ExecuteExternalTransferResult {
 
         @JsonProperty("updated_at")
         private OffsetDateTime updatedAt;
-
-        // Getters and Setters...
     }
 
+    @Data
     public static class OperationError {
         @JsonProperty("code")
         private String code;
@@ -75,7 +76,5 @@ public class ExecuteExternalTransferResult {
 
         @JsonProperty("public_message")
         private String publicMessage;
-
-        // Getters and Setters...
     }
 }

@@ -1,6 +1,7 @@
-package edu.softwarelab.starter.kafka;
+package edu.softwarelab.starter.producer;
 
 import edu.softwarelab.starter.dto.ExecuteExternalTransferResult;
+import edu.softwarelab.starter.kafka.KafkaTopics;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ public class SettlementKafkaProducer {
     public void sendTransferResult(ExecuteExternalTransferResult result) {
         log.info("Sending ExecuteExternalTransferResult for transactionId: {}", result.getTransactionId());
         // ارسال پاسخ به تاپیک نتیجه عملیات
-        kafkaTemplate.send(KafkaTopics.EVT_OPERATION_RESULT, result.getTransactionId(), result);
+        kafkaTemplate.send(KafkaTopics.EVT_OPERATION_RESULT, result.getTransactionId().toString(), result);
+    System.out.println("Sending ExecuteExternalTransferResult for transactionId: " + result.getTransactionId());
     }
 }
