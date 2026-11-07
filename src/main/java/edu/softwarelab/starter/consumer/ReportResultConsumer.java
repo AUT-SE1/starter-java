@@ -1,6 +1,7 @@
 package edu.softwarelab.starter.consumer;
 
 import edu.softwarelab.starter.dto.ReportResultEvent;
+import edu.softwarelab.starter.service.SettlementReportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -11,21 +12,24 @@ public class ReportResultConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(ReportResultConsumer.class);
 
-    @KafkaListener(
-        topics = "lab.s6.s5.event.report-result.v1",
-        groupId = "s5-report-result-group"
-    )
-    public void consumeReportResult(ReportResultEvent event) {
-        log.info("Received report acknowledgment from {}. ReportId: {}, Outcome: {}",
-                event.producer(), event.data().reportId(), event.data().outcome());
+    private final SettlementReportService reportService;
 
-        if ("ACCEPTED".equalsIgnoreCase(event.data().outcome())) {
-            log.info("Daily settlement report {} successfully verified by S6.", event.data().reportId());
-            // در اینجا می‌توانید وضعیت گزارش را در دیتابیس به ACKNOWLEDGED آپدیت کنید
-        } else {
-            log.error("Daily settlement report {} was REJECTED by S6! Error: {}",
-                    event.data().reportId(), event.data().error() != null ? event.data().error().detail() : "Unknown");
-            // آلارم یا آماده‌سازی برای بررسی دستی
+    public ReportResultConsumer(SettlementReportService reportService) {
+        this.reportService = reportService;
+    }
+
+    @KafkaListener(
+            topics = "${kafka.clusters.s6.topics.report-result}",
+            groupId = "s5-report-result-group",
+            containerFactory = "s6ListenerFactory")
+    public void consumeReportResult(ReportResultEvent event) {
+        if (event == null || event.data() == null) {
+            log.warn("Ignored empty report result");
+            return;
         }
+        log.info("Received report result from {}: report_id={}, outcome={}",
+                event.producer(), event.data().reportId(), event.data().outcome());
+        // تأیید ACCEPTED وضعیت را به SETTLED_CONFIRMED می‌برد؛ REJECTED لاگ می‌شود.
+        reportService.processReportResult(event);
     }
 }

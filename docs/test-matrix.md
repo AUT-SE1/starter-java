@@ -9,30 +9,28 @@ Levels: `unit` · `integration` · `contract` · `e2e`
 
 | # | Scenario | Input | Expected result | Level | Test file | Status |
 |---|---|---|---|---|---|---|
-| 1 | Create a valid order | `{"item":"book","quantity":2}` | `201`, body matches `Order` | integration | | done |
-| 2 | Quantity is zero | `{"item":"book","quantity":0}` | `400`, `field` is `quantity` | unit | | done |
-| 3 | Quantity is negative | `{"item":"book","quantity":-5}` | `400`, `field` is `quantity` | unit | | to do |
-| 4 | Quantity above the maximum | `{"item":"book","quantity":1001}` | `400`, `field` is `quantity` | unit | | to do |
-| 5 | Item is empty | `{"item":"","quantity":1}` | `400`, `field` is `item` | unit | | to do |
-| 6 | Item is only whitespace | `{"item":"   ","quantity":1}` | `400`, `field` is `item` | unit | | to do |
-| 7 | Item is longer than 64 characters | 65-character string | `400`, `field` is `item` | unit | | to do |
-| 8 | Item holds non-ASCII characters | `{"item":"کتاب","quantity":1}` | `201`, item preserved exactly | integration | | to do |
-| 9 | Required field missing | `{"item":"book"}` | `400`, `field` is `quantity` | unit | | to do |
-| 10 | Round trip | create, then `GET /orders/{id}` | `200`, same item and quantity | integration | | to do |
-| 11 | Unknown order id | `GET /orders/does-not-exist` | `404`, `error` is `not_found` | integration | | to do |
-| 12 | Neighbour's create endpoint | a valid order | schema matches the shared `openapi.yaml` | contract | | to do |
-| 13 | Neighbour's validation | `{"item":"book","quantity":0}` | `400` and an `Error` body | contract | | to do |
+| 1 | Process a valid RTGS transaction | `{"amount": 50000, "sourceIban": "IR...", ...}` | `200`, status is `COMPLETED` in DB | integration | `SettlementProcessingFlowTest.java` | to do |
+| 2 | Amount below minimum (10,000) | `amount: 5000` | `400`, throws IllegalArgumentException | unit | `RtgsValidationServiceTest.java` | to do |
+| 3 | Amount above maximum (500M) | `amount: 600000000` | `400`, throws IllegalArgumentException | unit | `RtgsValidationServiceTest.java` | to do |
+| 4 | Invalid source IBAN format | `sourceIban: "12345"` | `400`, throws IllegalArgumentException | unit | `RtgsValidationServiceTest.java` | to do |
+| 5 | Required fields missing | `{"amount": null}` | `400`, Validation error | unit | `RtgsValidationServiceTest.java` | to do |
+| 6 | Get settlement reports by date | `GET /api/v1/settlement-reports?date=2025-11-15` | `200`, returns list of reports | integration | `SettlementReportControllerTest.java` | to do |
+| 7 | Unknown report date format | `GET /api/v1/settlement-reports?date=invalid` | `400`, Bad Request | integration | `SettlementReportControllerTest.java` | to do |
+| 8 | S3 webhook (callbacks) valid call | a valid settlement result | schema matches S3's `openapi.yaml` | contract | `NeighborContractTest.java` | to do |
+| 9 | S3 webhook (callbacks) validation | invalid settlement result | `400` and a Problem Details Error body | contract | `NeighborContractTest.java` | to do |
 
 ## Frontend
 
 | # | Scenario | Input | Expected result | Level | Test file | Status |
 |---|---|---|---|---|---|---|
-| 14 | The order form renders its fields | — | item and quantity inputs present | component | | to do |
-| 15 | The form rejects an empty item | submit with an empty item | an error message is shown | component | | to do |
-| 16 | A full order journey | fill the form, submit | the new order appears on screen | e2e | | to do |
+| 10 | The RTGS form renders its fields | — | amount and IBAN inputs present | component | `RtgsForm.test.tsx` | to do |
+| 11 | The form rejects invalid IBAN | submit with wrong IBAN format | an error message is shown (Problem Details) | component | `RtgsForm.test.tsx` | to do |
+| 12 | A full RTGS transaction journey | fill the form correctly, submit | success message or updated status on screen | e2e | `RtgsJourney.spec.ts` | to do |
 
 ## Edge cases we deliberately did not cover
 
 | Case | Why not, and when we will |
 |---|---|
-| | |
+| Kafka message production | Out of scope for this sprint based on the User Story requirements. Will implement when Kafka integration is required. |
+| Scheduled Paya processing | Out of scope for this sprint based on the User Story. Will be addressed in a future task. |
+| Database connection failure during processing | Cannot be easily simulated in standard unit tests without heavy mocking. We rely on standard `@Transactional` rollbacks. |

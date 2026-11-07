@@ -18,7 +18,8 @@ public class SettlementTransfer {
     @Column(name = "correlation_id", nullable = false, length = 100)
     private String correlationId;
 
-    @Column(name = "source_iban", nullable = false, length = 26)
+    /** پیام S3 شبای مبدأ نمی‌فرستد، پس nullable است. */
+    @Column(name = "source_iban", length = 26)
     private String sourceIban;
 
     @Column(name = "destination_iban", nullable = false, length = 26)
@@ -38,6 +39,15 @@ public class SettlementTransfer {
 
     @Column(name = "failure_reason")
     private String failureReason;
+
+    @Column(name = "failure_code", length = 50)
+    private String failureCode;
+
+    @Column(name = "attempt_count", nullable = false)
+    private int attemptCount = 0;
+
+    @Column(name = "processing_started_at")
+    private OffsetDateTime processingStartedAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -75,6 +85,12 @@ public class SettlementTransfer {
     public void setStatus(String status) { this.status = status; }
     public String getFailureReason() { return failureReason; }
     public void setFailureReason(String failureReason) { this.failureReason = failureReason; }
+    public String getFailureCode() { return failureCode; }
+    public void setFailureCode(String failureCode) { this.failureCode = failureCode; }
+    public int getAttemptCount() { return attemptCount; }
+    public void setAttemptCount(int attemptCount) { this.attemptCount = attemptCount; }
+    public OffsetDateTime getProcessingStartedAt() { return processingStartedAt; }
+    public void setProcessingStartedAt(OffsetDateTime processingStartedAt) { this.processingStartedAt = processingStartedAt; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
     public OffsetDateTime getSettledAt() { return settledAt; }
