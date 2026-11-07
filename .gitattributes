@@ -1,12 +1,21 @@
 * text=auto
+
+# Keep text files using LF
 *.sh text eol=lf
 *.go text eol=lf
 *.py text eol=lf
 *.java text eol=lf
 *.cs text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.properties text eol=lf
+*.sql text eol=lf
+*.md text eol=lf
+
+# Binary files
 *.png binary
 *.jpg binary
 *.pdf binary
 
-# Keep the helper script out of the repository language statistics.
+# GitHub language statistics
 scripts/** linguist-vendored

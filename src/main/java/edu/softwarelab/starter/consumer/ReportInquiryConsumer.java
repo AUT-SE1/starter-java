@@ -26,7 +26,8 @@ public class ReportInquiryConsumer {
 
     @KafkaListener(
             topics = "${kafka.clusters.s6.topics.report-inquire}",
-            groupId = "s5-report-inquiry-group"
+            groupId = "s5-report-inquiry-group",
+            containerFactory = "s6ListenerFactory"
     )
     public void consumeInquiry(ReportInquiryCommand command) {
         log.info("Received inquiry from S6: message_id={}, business_date={}",
