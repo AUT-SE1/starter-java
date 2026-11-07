@@ -43,14 +43,11 @@ public class TransferIngestionService {
     public UUID accept(ExecuteExternalTransfer command) {
         validate(command);
 
-        UUID transactionId = command.transactionId();
-        String idempotencyKey = command.operationId() != null
-                ? command.operationId().toString()
+        UUID transactionId = command.getTransactionId();
+        String idempotencyKey = command.getOperationId() != null
+                ? command.getOperationId().toString()
                 : transactionId.toString();
 
-        // پیام تکراری: همان نتیجه، بدون ثبت و بدون پردازش دوباره.
-        // (رقابت دو پیام همزمان را constraint یکتایی idempotency_key می‌گیرد؛ تلاش بعدی
-        // consumer به همین شاخه می‌رسد.)
         if (repository.existsById(transactionId) || repository.findByIdempotencyKey(idempotencyKey).isPresent()) {
             log.info("Duplicate transfer command ignored: transaction_id={}", transactionId);
             return transactionId;
@@ -59,11 +56,11 @@ public class TransferIngestionService {
         SettlementTransfer transfer = new SettlementTransfer();
         transfer.setId(transactionId);
         transfer.setIdempotencyKey(idempotencyKey);
-        transfer.setCorrelationId(command.correlationId() != null ? command.correlationId() : transactionId.toString());
-        transfer.setSourceIban(null); // پیام S3 شبای مبدأ ندارد
-        transfer.setDestinationIban(command.data().destIban());
-        transfer.setAmount(command.data().amount());
-        transfer.setCurrency(command.data().currency() != null ? command.data().currency() : "IRR");
+        transfer.setCorrelationId(command.getCorrelationId() != null ? command.getCorrelationId() : transactionId.toString());
+        transfer.setSourceIban(null);
+        transfer.setDestinationIban(command.getData().getDestIban());
+        transfer.setAmount(command.getData().getAmount());
+        transfer.setCurrency(command.getData().getCurrency() != null ? command.getData().getCurrency() : "IRR");
         transfer.setSettlementType(defaultSettlementType);
         transfer.setStatus(SettlementStatus.ACCEPTED);
         repository.save(transfer);
@@ -76,24 +73,22 @@ public class TransferIngestionService {
         if (c == null) {
             throw new ValidationException("body", "Command is required");
         }
-        if (c.transactionId() == null) {
+        if (c.getTransactionId() == null) {
             throw new ValidationException("transaction_id", "transaction_id is required");
         }
-        if (c.data() == null) {
+        if (c.getData() == null) {
             throw new ValidationException("data", "data is required");
         }
-        if (c.data().destIban() == null || c.data().destIban().isBlank()) {
+        if (c.getData().getDestIban() == null || c.getData().getDestIban().isBlank()) {
             throw new ValidationException("data.dest_iban", "dest_iban is required");
         }
-        // این‌ها را constraintهای DB هم رد می‌کنند؛ همین‌جا با پیام درست رد می‌کنیم.
-        // اعتبارسنجی معنایی‌تر (قالب شبا، سقف مبلغ) کار خود موتور است و نتیجه‌ی FAILED ثبت می‌کند.
-        if (c.data().destIban().length() > 26) {
+        if (c.getData().getDestIban().length() > 26) {
             throw new ValidationException("data.dest_iban", "dest_iban must be at most 26 characters");
         }
-        if (c.data().amount() == null || c.data().amount() <= 0) {
+        if (c.getData().getAmount() == null || c.getData().getAmount() <= 0) {
             throw new ValidationException("data.amount", "amount must be a positive integer");
         }
-        if (c.data().currency() != null && !"IRR".equals(c.data().currency())) {
+        if (c.getData().getCurrency() != null && !"IRR".equals(c.getData().getCurrency())) {
             throw new ValidationException("data.currency", "only IRR is supported");
         }
     }
