@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 public class SettlementReportService {
 
     private static final ZoneId TEHRAN_ZONE = ZoneId.of("Asia/Tehran");
-    private static final Set<String> FINALIZED_STATUSES = Set.of("SUCCESS", "FAILED");
+    private static final Set<String> FINALIZED_STATUSES = Set.of("SETTLED", "SETTLED_CONFIRMED", "FAILED", "SUCCESS");
     private static final Logger log = LoggerFactory.getLogger(SettlementReportService.class);
 
     private final SettlementTransferRepository transferRepository;
@@ -159,13 +159,13 @@ public class SettlementReportService {
         long failedCount = 0L;
 
         for (SettlementReportItem item : items) {
-            if ("SUCCESS".equalsIgnoreCase(item.status())) {
-                successCount++;
-                totalAmount += (item.amount() != null ? item.amount() : 0L);
-            } else if ("FAILED".equalsIgnoreCase(item.status())) {
-                failedCount++;
-            }
-        }
+    if ("SUCCESS".equalsIgnoreCase(item.status()) || "SETTLED".equalsIgnoreCase(item.status()) || "SETTLED_CONFIRMED".equalsIgnoreCase(item.status())) {
+        successCount++;
+        totalAmount += (item.amount() != null ? item.amount() : 0L);
+    } else if ("FAILED".equalsIgnoreCase(item.status())) {
+        failedCount++;
+    }
+}
 
         return new SettlementReportSummary(totalCount, totalAmount, successCount, failedCount);
     }

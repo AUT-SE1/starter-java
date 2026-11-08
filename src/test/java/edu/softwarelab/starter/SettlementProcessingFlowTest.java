@@ -11,9 +11,11 @@ import edu.softwarelab.starter.service.SettlementProcessingService;
 import edu.softwarelab.starter.service.SettlementProcessingService.ProcessingOutcome;
 import edu.softwarelab.starter.service.SettlementStateService;
 import edu.softwarelab.starter.service.TransferIngestionService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.Duration;
@@ -21,24 +23,16 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-/** سناریوهای معیار پذیرش استوری RTGS، روی Postgres واقعی و موتور mock شده. */
-class SettlementProcessingFlowTest extends PostgresIntegrationTest {
+@SpringBootTest
+class SettlementProcessingFlowTest {
 
     private static final String IBAN = "IR000120000000000000000002";
 
@@ -61,6 +55,7 @@ class SettlementProcessingFlowTest extends PostgresIntegrationTest {
         when(engine.decide(any())).thenReturn(SettlementDecision.settled());
     }
 
+    // متد save اصلاح شد تا همان String استاندارد پروژه را دریافت کند
     private SettlementTransfer save(String type, String status) {
         SettlementTransfer t = new SettlementTransfer();
         t.setId(UUID.randomUUID());
@@ -77,10 +72,24 @@ class SettlementProcessingFlowTest extends PostgresIntegrationTest {
         return repository.findById(id).orElseThrow();
     }
 
+    // متد Command اصلاح شد تا از TransferData و Setterهای استاندارد استفاده کند
     private ExecuteExternalTransfer command(UUID transactionId, UUID operationId) {
-        return new ExecuteExternalTransfer(UUID.randomUUID(), "3.0", transactionId, "corr-1", null,
-                OffsetDateTime.now(), "S3-PAY", "ExecuteExternalTransfer.v3", operationId,
-                new ExecuteExternalTransfer.Data(IBAN, 2_500_000L, "IRR"));
+        ExecuteExternalTransfer cmd = new ExecuteExternalTransfer();
+        cmd.setTransactionId(transactionId);
+        cmd.setOperationId(operationId);
+        cmd.setCorrelationId("corr-1");
+        cmd.setMessageType("ExecuteExternalTransfer.v3");
+        cmd.setProducer("S3-PAY");
+        cmd.setSchemaVersion("3.0");
+        cmd.setOccurredAt(OffsetDateTime.now());
+
+        ExecuteExternalTransfer.TransferData data = new ExecuteExternalTransfer.TransferData();
+        data.setDestIban(IBAN);
+        data.setAmount(2_500_000L);
+        data.setCurrency("IRR");
+
+        cmd.setData(data);
+        return cmd;
     }
 
     @Test
@@ -105,7 +114,7 @@ class SettlementProcessingFlowTest extends PostgresIntegrationTest {
         SettlementTransfer after = reload(t.getId());
         assertThat(after.getStatus()).isEqualTo("FAILED");
         assertThat(after.getFailureCode()).isEqualTo("DESTINATION_BANK_REJECTED");
-        assertThat(after.getSettledAt()).isNotNull(); // تا در گزارش روزانه بیاید
+        assertThat(after.getSettledAt()).isNotNull();
     }
 
     @Test
@@ -137,7 +146,7 @@ class SettlementProcessingFlowTest extends PostgresIntegrationTest {
 
         assertThat(processing.process(t.getId())).isEqualTo(ProcessingOutcome.RETRY_LATER);
         SettlementTransfer mid = reload(t.getId());
-        assertThat(mid.getStatus()).isEqualTo("ACCEPTED"); // نه FAILED، نه نتیجه‌ی مالی
+        assertThat(mid.getStatus()).isEqualTo("ACCEPTED");
         assertThat(mid.getSettledAt()).isNull();
 
         assertThat(processing.process(t.getId())).isEqualTo(ProcessingOutcome.SETTLED);
@@ -153,7 +162,7 @@ class SettlementProcessingFlowTest extends PostgresIntegrationTest {
 
         assertThat(processing.process(t.getId())).isEqualTo(ProcessingOutcome.RETRY_LATER);
         assertThat(processing.process(t.getId())).isEqualTo(ProcessingOutcome.RETRY_LATER);
-        assertThat(processing.process(t.getId())).isEqualTo(ProcessingOutcome.FAILED); // max-attempts=3
+        assertThat(processing.process(t.getId())).isEqualTo(ProcessingOutcome.FAILED);
 
         SettlementTransfer after = reload(t.getId());
         assertThat(after.getStatus()).isEqualTo("FAILED");
@@ -165,7 +174,7 @@ class SettlementProcessingFlowTest extends PostgresIntegrationTest {
         AtomicInteger decideCalls = new AtomicInteger();
         when(engine.decide(any())).thenAnswer(inv -> {
             decideCalls.incrementAndGet();
-            Thread.sleep(100); // پنجره‌ی رقابت را بزرگ می‌کند
+            Thread.sleep(100);
             return SettlementDecision.settled();
         });
         SettlementTransfer t = save("RTGS", "ACCEPTED");
@@ -210,7 +219,6 @@ class SettlementProcessingFlowTest extends PostgresIntegrationTest {
         UUID txId = UUID.randomUUID();
         when(engine.decide(any())).thenAnswer(inv -> {
             SettlementTransfer t = inv.getArgument(0);
-            // لحظه‌ی پردازش، تراکنش باید قبلاً در DB باشد (معیار ۲)
             assertThat(repository.findById(t.getId())).isPresent();
             return SettlementDecision.settled();
         });
