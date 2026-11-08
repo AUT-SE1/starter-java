@@ -2,6 +2,7 @@ package edu.softwarelab.starter.producer;
 
 import edu.softwarelab.starter.dto.ExecuteExternalTransferResult;
 import edu.softwarelab.starter.kafka.KafkaTopics;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
@@ -13,7 +14,7 @@ public class SettlementKafkaProducer {
     private static final Logger log = LoggerFactory.getLogger(SettlementKafkaProducer.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public SettlementKafkaProducer(KafkaTemplate<String, Object> kafkaTemplate) {
+    public SettlementKafkaProducer(@Qualifier("s3KafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
@@ -22,6 +23,6 @@ public class SettlementKafkaProducer {
         log.info("Sending ExecuteExternalTransferResult for transactionId: {}", result.getTransactionId());
         // ارسال پاسخ به تاپیک نتیجه عملیات
         kafkaTemplate.send(KafkaTopics.EVT_OPERATION_RESULT, result.getTransactionId().toString(), result);
-    System.out.println("Sending ExecuteExternalTransferResult for transactionId: " + result.getTransactionId());
+        System.out.println("Sending ExecuteExternalTransferResult for transactionId: " + result.getTransactionId());
     }
 }
